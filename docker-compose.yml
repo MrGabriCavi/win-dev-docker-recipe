@@ -1,4 +1,4 @@
-version: "3.3"
+version: '3.7'
 
 services:
 
@@ -17,6 +17,7 @@ services:
       - "8080:8080"
       - "443:443"
       - "3306:3306"
+      - "5432:5432"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./config:/etc/traefik"
@@ -25,10 +26,33 @@ services:
 
   whoami:
     image: "traefik/whoami"
-    container_name: "simple-service"
+    container_name: "whoami-service"
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.whoami.rule=Host(`gabri.docker.appdev`)"
       - "traefik.http.routers.whoami.entrypoints=websecure"
       - "traefik.http.routers.whoami.tls=true"
       - "traefik.http.routers.whoami.tls.domains[0].main=gabri.docker.appdev"
+
+  postgres:
+    image: postgres:16.3-bookworm
+    container_name: "postgres_db"
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_DB=$POSTGRES_DB
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - db_pg_data:/var/lib/postgresql/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.postgres_db.rule=HostSNI(`pg1.docker.appdev`)"
+      - "traefik.tcp.routers.postgres_db.entrypoints=postgres"
+      - "traefik.tcp.routers.postgres_db.tls=true"
+      - "traefik.tcp.routers.postgres_db.tls.domains[0].main=pg1.docker.appdev"
+
+volumes:
+  db_pg_data:
+   driver: local
