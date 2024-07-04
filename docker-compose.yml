@@ -56,3 +56,7 @@ services:
 volumes:
   db_pg_data:
    driver: local
+
+networks:
+  default:
+   name: win-dev-docker-recipe_default
