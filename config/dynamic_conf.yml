@@ -1,17 +1,17 @@
 http:
   routers:
     api:
-      rule: Host(`reverse-proxy.appdev`)
+      rule: Host(`reverse-proxy.docker.appdev`)
       service: api@internal
       tls: true
 tls:
   stores:
     default:
       defaultCertificate:
-        certFile: /certs/reverse-proxy.appdev.pem
-        keyFile: /certs/reverse-proxy.appdev-key.pem
+        certFile: /certs/_wildcard.docker.appdev.pem
+        keyFile: /certs/_wildcard.docker.appdev-key.pem
   certificates:
+    - certFile: /certs/reverse-proxy.docker.appdev.pem
+      keyFile: /certs/reverse-proxy.docker.appdev-key.pem
     - certFile: /certs/_wildcard.docker.appdev.pem
-      keyFile: /certs/_wildcard.docker.appdev-key.pem  
-    - certFile: /certs/_wildcard.syn.appdev.pem
-      keyFile: /certs/_wildcard.syn.appdev-key.pem
+      keyFile: /certs/_wildcard.docker.appdev-key.pem
