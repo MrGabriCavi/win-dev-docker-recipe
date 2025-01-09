@@ -11,7 +11,5 @@ tls:
         certFile: /certs/_wildcard.docker.appdev.pem
         keyFile: /certs/_wildcard.docker.appdev-key.pem
   certificates:
-    - certFile: /certs/reverse-proxy.docker.appdev.pem
-      keyFile: /certs/reverse-proxy.docker.appdev-key.pem
     - certFile: /certs/_wildcard.docker.appdev.pem
       keyFile: /certs/_wildcard.docker.appdev-key.pem

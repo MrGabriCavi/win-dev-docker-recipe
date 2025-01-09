@@ -15,6 +15,9 @@ services:
       - 443:443
       - 3306:3306
       - 5432:5432
+    networks:
+      - default
+      - external_bridge
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config:/etc/traefik
@@ -31,6 +34,37 @@ services:
       - "traefik.http.routers.whoami.entrypoints=websecure"
       - "traefik.http.routers.whoami.tls=true"
       - "traefik.http.routers.whoami.tls.domains[0].main=gabri.docker.appdev"
+
+  mysql:
+    image: mysql:8.4
+    container_name: mysql_db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE=$MYSQL_DATABASE
+      - MYSQL_USER=$MYSQL_USER
+      - MYSQL_PASSWORD=$MYSQL_PASSWORD
+    volumes:
+      - db_mysql_data:/var/lib/mysql  
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.mysql_db.rule=HostSNI(`mysql1.docker.appdev`)"
+      - "traefik.tcp.routers.mysql_db.entrypoints=mysql"
+      - "traefik.tcp.routers.mysql_db.tls=true"
+      - "traefik.tcp.routers.mysql_db.tls.domains[0].main=mysql1.docker.appdev"     
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.1-apache
+    container_name: phpmyadmin
+    restart: unless-stopped
+    environment:
+      - PMA_HOST=mysql_db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pma.rule=Host(`pma.docker.appdev`)"
+      - "traefik.http.routers.pma.entrypoints=websecure"
+      - "traefik.http.routers.pma.tls=true"
+      - "traefik.http.routers.pma.tls.domains[0].main=pma.docker.appdev"
 
   postgres:
     image: postgres:16.3-bookworm
@@ -67,11 +101,15 @@ services:
       - "traefik.http.routers.pg_admin.tls.domains[0].main=pgadmin.docker.appdev"
 
 volumes:
+  db_mysql_data:
+    driver: local
   db_pg_data:
-   driver: local
+    driver: local
   pgadmin_data:
-   driver: local
+    driver: local
 
 networks:
   default:
-   name: win-dev-docker-recipe_default
+    name: win-dev-docker-recipe_default
+  external_bridge:
+    name: external_bridge_traefik
